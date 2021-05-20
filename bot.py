@@ -1,3 +1,4 @@
+
 from hata import Client
 import config
 import PIL.Image
@@ -41,24 +42,32 @@ async def message_create(ctx, message):
     if message.content.lower().startswith("+convert"):
         if message.attachments:
             ascii = img_to_ascii(message.attachments[0].proxy_url)
-            
-            if len(ascii) <= 2000:
-                await ctx.message_create(message.channel, "`{}`".format(ascii))
-                return
+        else:
+            for content in message.contents:
+                space_split = content.split(" ")
+                for word in space_split:
+                    if word.startswith("<:") and word.endswith(">"):
+                        id = word.split("<:")[1].split(":")[1][:-1]
+                        ascii = img_to_ascii("https://cdn.discordapp.com/emojis/{}.png?v=1".format(id))
 
-            await ctx.message_create(message.channel, "Sending ascii... ({} characters).".format(len(ascii)))
-
-            while True:
-                if len(ascii) >= 1010:
-                    await ctx.message_create(message.channel, "`{}`".format(ascii[:1010]))
-
-                    ascii = ascii[1010:]
-                else:
-                    break
-
-                continue
-
+        if len(ascii) <= 2000:
+            await ctx.message_create(message.channel, "`{}`".format(ascii))
             return
+
+        await ctx.message_create(message.channel, "Sending ascii... ({} characters).".format(len(ascii)))
+
+        while True:
+            if len(ascii) >= 1010:
+                await ctx.message_create(message.channel, "`{}`".format(ascii[:1010]))
+
+                ascii = ascii[1010:]
+            else:
+                await ctx.message_create(message.channel, "`{}`".format(ascii))
+                break
+
+            continue
+
+        return
 
     return
 
